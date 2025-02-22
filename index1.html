@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gastos y Ganancia MOMENTUM</title>
+    <style>
+        /* Estilos como antes */
+    </style>
+</head>
+<body>
+
+    <!-- Fondo -->
+    <div class="background">
+        <div class="word">MOMENTUM</div>
+    </div>
+
+    <!-- Página de bienvenida -->
+    <div class="welcome-container fade">
+        <h1>Bienvenido a la Mesa Directiva MOMENTUM U-ERRE VALLE ALTO</h1>
+        <button onclick="showLoginPage()">Iniciar Sesión</button>
+    </div>
+
+    <!-- Pantalla de inicio de sesión -->
+    <div id="login" class="container fade">
+        <h2>Iniciar Sesión</h2>
+        <input type="text" id="username" placeholder="Usuario">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button onclick="login()">Ingresar</button>
+        <p id="error" style="color: red; display: none;">Usuario o contraseña incorrectos.</p>
+    </div>
+
+    <!-- Contenido principal -->
+    <div id="app" class="fade">
+        <h1 class="title">Gastos y Ganancia MOMENTUM</h1>
+
+        <div class="container">
+            <h2>Agregar Movimiento</h2>
+            <form id="form-gasto">
+                <input type="text" id="concepto" placeholder="Concepto" required>
+                <input type="number" id="monto_invertido" placeholder="Monto invertido" step="0.01" required>
+                <input type="number" id="monto_venta" placeholder="Monto de la venta" step="0.01" required>
+                <input type="number" id="ganancia_vendimia" placeholder="Ganancia de la vendimia" step="0.01" required>
+                <input type="date" id="fecha" required>
+                <button type="submit">Agregar</button>
+            </form>
+        </div>
+
+        <h2>Lista de Movimientos</h2>
+        <table id="tabla-movimientos">
+            <tr>
+                <th>ID</th>
+                <th>Concepto</th>
+                <th>Monto Invertido</th>
+                <th>Monto de Venta</th>
+                <th>Ganancia Vendimia</th>
+                <th>Fecha</th>
+            </tr>
+        </table>
+
+        <h2>Resumen</h2>
+        <p>Total Invertido: $<span id="total-invertido">0</span></p>
+        <p>Total de Ventas: $<span id="total-ventas">0</span></p>
+        <p>Total Ganado: $<span id="total-ganancia">0</span></p>
+    </div>
+
+    <script>
+        let movimientos = JSON.parse(localStorage.getItem("movimientos")) || [];
+        let id = movimientos.length ? movimientos[movimientos.length - 1].id + 1 : 1;
+
+        function showLoginPage() {
+            document.querySelector(".welcome-container").style.display = "none";
+            document.getElementById("login").style.display = "block";
+        }
+
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            
+            if (username === "MOMENTUM2025" && password === "MOMENTUM") {
+                sessionStorage.setItem("logueado", "true");
+                document.getElementById("login").style.display = "none";
+                document.getElementById("app").style.display = "block";
+                actualizarTabla();
+            } else {
+                document.getElementById("error").style.display = "block";
+            }
+        }
+
+        function verificarLogin() {
+            if (sessionStorage.getItem("logueado") === "true") {
+                document.getElementById("login").style.display = "none";
+                document.getElementById("app").style.display = "block";
+            } else {
+                document.getElementById("login").style.display = "block";
+            }
+        }
+
+        window.onload = function() {
+            sessionStorage.removeItem("logueado");
+            verificarLogin();
+        };
+
+        document.getElementById("form-gasto").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const concepto = document.getElementById("concepto").value;
+            const montoInvertido = parseFloat(document.getElementById("monto_invertido").value);
+            const montoVenta = parseFloat(document.getElementById("monto_venta").value);
+            const gananciaVendimia = parseFloat(document.getElementById("ganancia_vendimia").value);
+            const fecha = document.getElementById("fecha").value;
+
+            const movimiento = {
+                id: id++,
+                concepto: concepto,
+                monto_invertido: montoInvertido,
+                monto_venta: montoVenta,
+                ganancia_vendimia: gananciaVendimia,
+                fecha: fecha
+            };
+
+            movimientos.push(movimiento);
+            localStorage.setItem("movimientos", JSON.stringify(movimientos));
+            actualizarTabla();
+            document.getElementById("form-gasto").reset();
+        });
+
+        function actualizarTabla() {
+            const tabla = document.getElementById("tabla-movimientos");
+            tabla.innerHTML = `
+                <tr>
+                    <th>ID</th>
+                    <th>Concepto</th>
+                    <th>Monto Invertido</th>
+                    <th>Monto de Venta</th>
+                    <th>Ganancia Vendimia</th>
+                    <th>Fecha</th>
+                </tr>
+            `;
+
+            let totalInvertido = 0;
+            let totalVentas = 0;
+            let totalGanancia = 0;
+
+            movimientos.forEach(movimiento => {
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>${movimiento.id}</td>
+                    <td>${movimiento.concepto}</td>
+                    <td>${movimiento.monto_invertido}</td>
+                    <td>${movimiento.monto_venta}</td>
+                    <td>${movimiento.ganancia_vendimia}</td>
+                    <td>${movimiento.fecha}</td>
+                `;
+
+                tabla.appendChild(row);
+
+                totalInvertido += movimiento.monto_invertido;
+                totalVentas += movimiento.monto_venta;
+                totalGanancia += movimiento.ganancia_vendimia;
+            });
+
+            document.getElementById("total-invertido").textContent = totalInvertido.toFixed(2);
+            document.getElementById("total-ventas").textContent = totalVentas.toFixed(2);
+            document.getElementById("total-ganancia").textContent = totalGanancia.toFixed(2);
+        }
+
+        actualizarTabla();
+    </script>
+
+</body>
+</html>
